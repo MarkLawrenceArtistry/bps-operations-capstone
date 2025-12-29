@@ -11,37 +11,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // GENERAL VARIABLES
     // Pag may bagong page, 1. DAGDAG mo sa switch case
-    const router = async () => {
-        const hash = window.location.hash || '#dashboard';
+    if (contentDiv) { 
+        
+        const router = async () => {
+            const hash = window.location.hash || '#dashboard';
 
-        contentDiv.innerHTML = '<div>Loading data..</div>';
+            contentDiv.innerHTML = '<div>Loading data..</div>';
 
-        try {
-            switch(hash) {
-                case '#dashboard':
-                    render.renderDashboard(contentDiv);
-                    break;
-                case '#accounts':
-                    const token = JSON.parse(localStorage.getItem('token'))
-                    const users = await api.getAllUsers(token)
-                    render.renderManageUsers(contentDiv, users)
-                    break;
-                default:
-                    contentDiv.innerHTML = `<h1>Not Found 404</h1>`
-            }
-        } catch(err) {
-            console.error(err)
-            if(err.message.includes("Unauthorized") || err.message.includes("token")) {
-                alert("Session expired. Please login again.")
-                localStorage.removeItem('token')
-                location.href = 'index.html'
-            } else {
-                contentDiv.innerHTML = `<p>Error loading data ${err.message}</p>`
+            try {
+                switch(hash) {
+                    case '#dashboard':
+                        render.renderDashboard(contentDiv);
+                        break;
+                    case '#accounts':
+                        const token = JSON.parse(localStorage.getItem('token'))
+                        const users = await api.getAllUsers(token)
+                        render.renderManageUsers(contentDiv, users)
+                        break;
+                    default:
+                        contentDiv.innerHTML = `<h1>Not Found 404</h1>`
+                }
+            } catch(err) {
+                console.error(err)
+                if(err.message.includes("Unauthorized") || err.message.includes("token")) {
+                    alert("Session expired. Please login again.")
+                    localStorage.removeItem('token')
+                    location.href = 'index.html'
+                } else {
+                    contentDiv.innerHTML = `<p>Error loading data ${err.message}</p>`
+                }
             }
         }
+
+        window.addEventListener('hashchange', router)
+        router(); // Run immediately on load
     }
-    window.addEventListener('hashchange', router)
-    router();
 
 
     // (NAVIGATION)
@@ -78,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 
     // (AUTH) Login
+    let counter = 0;
 	if(loginForm) {
 		loginForm.addEventListener('submit', async (e) => {
 			e.preventDefault()
@@ -96,6 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 location.href = "dashboard.html"
 			}
 			catch(err) {
+                let statusDisplay = document.querySelector('#status-display')
+                statusDisplay.style.display = "block";
+                statusDisplay.innerText = `${counter} - Incorrect email or password.`;
+                counter += 1;
 				console.error(err)
 			} 
 		})

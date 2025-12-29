@@ -1,10 +1,22 @@
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcryptjs');
-const DB_SOURCE = "bps.db";
+const path = require('path');
+const fs = require('fs');
+
+let DB_SOURCE = "bps.db";
+
+if (process.env.DB_PATH) {
+    const dbDir = path.dirname(process.env.DB_PATH);
+    if (!fs.existsSync(dbDir)){
+        fs.mkdirSync(dbDir, { recursive: true });
+    }
+    DB_SOURCE = process.env.DB_PATH;
+    console.log("Using Database at:", DB_SOURCE);
+}
 
 const db = new sqlite3.Database(DB_SOURCE, (err) => {
     if(err) {
-        console.log(err.message);
+        console.log("Database Error:", err.message);
     }
 })
 
